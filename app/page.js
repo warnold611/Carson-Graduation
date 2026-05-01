@@ -135,6 +135,7 @@ export default function HomePage() {
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(13,7,7,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <img src="/images/bcmark.png" alt="Bridge City Cardinals" style={{ height: 36, objectFit: 'contain' }} />
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <Link href="/about" style={{ fontSize: 14, fontWeight: 600, color: 'var(--muted)', padding: '8px 4px' }}>About</Link>
           <button onClick={handleShare} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 16px', color: 'var(--muted)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
             Share
           </button>

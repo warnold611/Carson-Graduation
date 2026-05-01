@@ -154,6 +154,9 @@ function SettingsPanel({ password }) {
   const [dadsNote, setDadsNote] = useState('')
   const [donorGoal, setDonorGoal] = useState('')
   const [siteSubtitle, setSiteSubtitle] = useState('')
+  const [aboutBio, setAboutBio] = useState('')
+  const [aboutQuote, setAboutQuote] = useState('')
+  const [aboutInterests, setAboutInterests] = useState('')
   const [saving, setSaving] = useState({})
   const [results, setResults] = useState({})
   const photoInputRef = useRef(null)
@@ -165,7 +168,9 @@ function SettingsPanel({ password }) {
       if (d.dads_note) setDadsNote(d.dads_note)
       if (d.donor_goal) setDonorGoal(d.donor_goal)
       if (d.site_subtitle) setSiteSubtitle(d.site_subtitle)
-      setLoaded(true)
+      if (d.about_bio) setAboutBio(d.about_bio)
+      if (d.about_quote) setAboutQuote(d.about_quote)
+      if (d.about_interests) setAboutInterests(d.about_interests)
     })
   }, [])
 
@@ -282,6 +287,50 @@ function SettingsPanel({ password }) {
         </div>
         {results.donor_goal?.ok && <div style={S.successBox}>{results.donor_goal.ok}</div>}
         {results.donor_goal?.err && <div style={S.errBox}>{results.donor_goal.err}</div>}
+      </div>
+
+      {/* About Carson */}
+      <div style={S.card}>
+        <div style={S.sectionTitle}>About Carson</div>
+        <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 18, lineHeight: 1.55 }}>
+          Shown on the <strong style={{ color: 'var(--text)' }}>/about</strong> page. Helps strangers connect with Carson before donating.
+        </p>
+
+        <div style={S.fieldGroup}>
+          <label style={S.label}>Bio (supports paragraph breaks)</label>
+          <textarea style={S.textarea} value={aboutBio} onChange={e => setAboutBio(e.target.value)} placeholder="Write a few paragraphs about Carson…" />
+          <div style={{ fontSize: 12, color: 'var(--muted)', textAlign: 'right', marginTop: 4 }}>{aboutBio.length} chars</div>
+        </div>
+        <button onClick={() => saveSetting('about_bio', aboutBio)} disabled={saving.about_bio} style={{ ...S.saveBtn, opacity: saving.about_bio ? 0.6 : 1, marginBottom: 6 }}>
+          {saving.about_bio ? 'Saving…' : 'Save Bio'}
+        </button>
+        {results.about_bio?.ok && <div style={S.successBox}>{results.about_bio.ok}</div>}
+        {results.about_bio?.err && <div style={S.errBox}>{results.about_bio.err}</div>}
+
+        <div style={{ borderTop: '1px solid var(--border)', margin: '24px 0' }} />
+
+        <div style={S.fieldGroup}>
+          <label style={S.label}>Quote from Carson <span style={{ color: 'var(--muted)', textTransform: 'none', fontWeight: 400 }}>(optional)</span></label>
+          <textarea style={{ ...S.textarea, minHeight: 72 }} value={aboutQuote} onChange={e => setAboutQuote(e.target.value)} placeholder="Something Carson said about his future, in his own words…" maxLength={300} />
+        </div>
+        <button onClick={() => saveSetting('about_quote', aboutQuote || null)} disabled={saving.about_quote} style={{ ...S.saveBtn, opacity: saving.about_quote ? 0.6 : 1, marginBottom: 6 }}>
+          {saving.about_quote ? 'Saving…' : 'Save Quote'}
+        </button>
+        {results.about_quote?.ok && <div style={S.successBox}>{results.about_quote.ok}</div>}
+        {results.about_quote?.err && <div style={S.errBox}>{results.about_quote.err}</div>}
+
+        <div style={{ borderTop: '1px solid var(--border)', margin: '24px 0' }} />
+
+        <div style={S.fieldGroup}>
+          <label style={S.label}>Interests & Activities <span style={{ color: 'var(--muted)', textTransform: 'none', fontWeight: 400 }}>(optional — comma separated)</span></label>
+          <input style={S.input} value={aboutInterests} onChange={e => setAboutInterests(e.target.value)} placeholder="Football, Fishing, Cars, Music…" />
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 5 }}>Each item separated by a comma shows as a tag on the About page.</div>
+        </div>
+        <button onClick={() => saveSetting('about_interests', aboutInterests || null)} disabled={saving.about_interests} style={{ ...S.saveBtn, opacity: saving.about_interests ? 0.6 : 1, marginBottom: 6 }}>
+          {saving.about_interests ? 'Saving…' : 'Save Interests'}
+        </button>
+        {results.about_interests?.ok && <div style={S.successBox}>{results.about_interests.ok}</div>}
+        {results.about_interests?.err && <div style={S.errBox}>{results.about_interests.err}</div>}
       </div>
     </div>
   )
