@@ -115,6 +115,38 @@ function SubmissionCard({ sub, password, onUpdate }) {
   )
 }
 
+// ─── Wish Card ────────────────────────────────────────────────────────────────
+function WishCard({ wish, from, password, onUpdate }) {
+  const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState(null)
+
+  async function handleAction(approved) {
+    setLoading(true); setErr(null)
+    try {
+      const res = await fetch('/api/admin/well-wishes', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-password': password }, body: JSON.stringify({ id: wish.id, approved }) })
+      const data = await res.json()
+      if (data.error) { setErr(data.error); return }
+      onUpdate(wish.id)
+    } catch { setErr('Request failed.') }
+    finally { setLoading(false) }
+  }
+
+  return (
+    <div style={S.card}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>— {from}</div>
+        <div style={{ fontSize: 12, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{formatDate(wish.created_at)}</div>
+      </div>
+      <p style={{ fontSize: 15, fontStyle: 'italic', color: 'var(--muted)', lineHeight: 1.65, marginBottom: 16 }}>"{wish.message}"</p>
+      {err && <div style={S.errBox}>{err}</div>}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button onClick={() => handleAction(true)} disabled={loading} style={{ ...S.approveBtn, opacity: loading ? 0.6 : 1 }}>{loading ? '…' : '✓ Approve'}</button>
+        <button onClick={() => handleAction(false)} disabled={loading} style={{ ...S.rejectBtn, opacity: loading ? 0.6 : 1 }}>{loading ? '…' : '✕ Reject'}</button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Site Settings Panel ──────────────────────────────────────────────────────
 function SettingsPanel({ password }) {
   const [photo, setPhoto] = useState(null)
@@ -262,17 +294,23 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [submissions, setSubmissions] = useState([])
+  const [wishes, setWishes] = useState([])
   const [refreshing, setRefreshing] = useState(false)
-  const [tab, setTab] = useState('submissions') // 'submissions' | 'settings'
+  const [tab, setTab] = useState('submissions') // 'submissions' | 'wishes' | 'settings'
 
   async function handleLogin(e) {
     e.preventDefault(); setError(null); setLoading(true)
     try {
-      const res = await fetch('/api/admin/pending', { headers: { 'x-admin-password': password } })
-      const data = await res.json()
-      if (res.status === 401) { setError('Wrong password.'); return }
-      if (data.error) { setError(data.error); return }
-      setSubmissions(data.submissions || [])
+      const [subRes, wishRes] = await Promise.all([
+        fetch('/api/admin/pending', { headers: { 'x-admin-password': password } }),
+        fetch('/api/admin/well-wishes', { headers: { 'x-admin-password': password } }),
+      ])
+      const subData = await subRes.json()
+      if (subRes.status === 401) { setError('Wrong password.'); return }
+      if (subData.error) { setError(subData.error); return }
+      const wishData = await wishRes.json()
+      setSubmissions(subData.submissions || [])
+      setWishes(wishData.wishes || [])
       setAuthed(true)
     } catch { setError('Request failed.') }
     finally { setLoading(false) }
@@ -281,14 +319,20 @@ export default function AdminPage() {
   async function handleRefresh() {
     setRefreshing(true)
     try {
-      const res = await fetch('/api/admin/pending', { headers: { 'x-admin-password': password } })
-      const data = await res.json()
-      if (!data.error) setSubmissions(data.submissions || [])
+      const [subRes, wishRes] = await Promise.all([
+        fetch('/api/admin/pending', { headers: { 'x-admin-password': password } }),
+        fetch('/api/admin/well-wishes', { headers: { 'x-admin-password': password } }),
+      ])
+      const subData = await subRes.json()
+      const wishData = await wishRes.json()
+      if (!subData.error) setSubmissions(subData.submissions || [])
+      if (!wishData.error) setWishes(wishData.wishes || [])
     } catch {}
     finally { setRefreshing(false) }
   }
 
   function handleUpdate(id) { setSubmissions(prev => prev.filter(s => s.id !== id)) }
+  function handleWishUpdate(id) { setWishes(prev => prev.filter(w => w.id !== id)) }
 
   if (!authed) {
     return (
@@ -333,9 +377,12 @@ export default function AdminPage() {
 
       <div style={S.container}>
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 28, flexWrap: 'wrap' }}>
           <button onClick={() => setTab('submissions')} style={S.tab(tab === 'submissions')}>
-            Submissions {submissions.length > 0 ? `(${submissions.length})` : ''}
+            Career Submissions {submissions.length > 0 ? `(${submissions.length})` : ''}
+          </button>
+          <button onClick={() => setTab('wishes')} style={S.tab(tab === 'wishes')}>
+            Well Wishes {wishes.length > 0 ? `(${wishes.length})` : ''}
           </button>
           <button onClick={() => setTab('settings')} style={S.tab(tab === 'settings')}>
             Site Settings
@@ -355,6 +402,28 @@ export default function AdminPage() {
               </div>
             ) : (
               submissions.map(sub => <SubmissionCard key={sub.id} sub={sub} password={password} onUpdate={handleUpdate} />)
+            )}
+          </>
+        )}
+
+        {/* Well Wishes Tab */}
+        {tab === 'wishes' && (
+          <>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, marginBottom: 6 }}>Pending Well Wishes</h1>
+            <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 24 }}>Approve to publish to the Well Wishes wall. Reject to dismiss.</p>
+            {wishes.length === 0 ? (
+              <div style={{ ...S.card, textAlign: 'center', padding: '48px 24px' }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>💌</div>
+                <div style={{ fontSize: 18, fontFamily: 'var(--font-heading)', marginBottom: 6 }}>All caught up!</div>
+                <p style={{ color: 'var(--muted)', fontSize: 14 }}>No pending well wishes right now.</p>
+              </div>
+            ) : (
+              wishes.map(w => {
+                const from = w.is_anonymous ? 'Anonymous' : [w.name, w.city && w.state ? `${w.city}, ${w.state}` : (w.city || w.state)].filter(Boolean).join(' · ')
+                return (
+                  <WishCard key={w.id} wish={w} from={from} password={password} onUpdate={handleWishUpdate} />
+                )
+              })
             )}
           </>
         )}

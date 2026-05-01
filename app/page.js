@@ -89,6 +89,7 @@ export default function HomePage() {
   const [donors, setDonors] = useState([])
   const [stories, setStories] = useState([])
   const [filter, setFilter] = useState('All')
+  const [wishes, setWishes] = useState([])
   const [statsLoaded, setStatsLoaded] = useState(false)
   const [settings, setSettings] = useState({
     carson_photo: null,
@@ -109,6 +110,7 @@ export default function HomePage() {
     fetch('/api/stats').then(r => r.json()).then(d => { setStats(d); setStatsLoaded(true) }).catch(() => setStatsLoaded(true))
     fetch('/api/honor-roll').then(r => r.json()).then(d => setDonors(d.donors || [])).catch(() => {})
     fetch('/api/career-wall').then(r => r.json()).then(d => setStories(d.submissions || [])).catch(() => {})
+    fetch('/api/well-wishes').then(r => r.json()).then(d => setWishes(d.wishes || [])).catch(() => {})
   }, [])
 
   async function handleShare() {
@@ -264,6 +266,48 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      {/* WELL WISHES */}
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: '0 20px 64px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 700 }}>Well Wishes</h2>
+          <Link href="/well-wishes">
+            <button
+              style={{ background: 'transparent', border: '1px solid var(--red)', color: 'var(--red)', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--red)'; e.currentTarget.style.color = '#fff' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--red)' }}
+            >
+              + Send Well Wishes
+            </button>
+          </Link>
+        </div>
+
+        {wishes.length === 0 ? (
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '36px 24px', textAlign: 'center' }}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>💌</div>
+            <p style={{ color: 'var(--muted)', fontSize: 15, marginBottom: 20 }}>Be the first to send Carson a message.</p>
+            <Link href="/well-wishes">
+              <button style={{ ...btnStyle, padding: '11px 26px' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--dark-red)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--red)'}>
+                Send Well Wishes
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))', gap: 16 }}>
+            {wishes.map(w => {
+              const from = w.is_anonymous ? 'Anonymous' : [w.name, w.city && w.state ? `${w.city}, ${w.state}` : (w.city || w.state)].filter(Boolean).join(' · ')
+              return (
+                <div key={w.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
+                  <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--text)', marginBottom: 12, fontStyle: 'italic' }}>
+                    "{w.message}"
+                  </p>
+                  <div style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600 }}>— {from}</div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
 
       {/* CAREER WALL */}
       <section style={{ maxWidth: 900, margin: '0 auto', padding: '0 20px 80px' }}>
