@@ -1,0 +1,24 @@
+{
+  "name": "For Carson",
+  "short_name": "For Carson",
+  "description": "Help shape what comes next for Carson Sauceda, Bridge City HS Class of 2026.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D0707",
+  "theme_color": "#D91E2A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
