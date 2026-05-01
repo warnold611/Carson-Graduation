@@ -157,6 +157,7 @@ function SettingsPanel({ password }) {
   const [aboutBio, setAboutBio] = useState('')
   const [aboutQuote, setAboutQuote] = useState('')
   const [aboutInterests, setAboutInterests] = useState('')
+  const [graduationDate, setGraduationDate] = useState('')
   const [saving, setSaving] = useState({})
   const [results, setResults] = useState({})
   const photoInputRef = useRef(null)
@@ -171,6 +172,7 @@ function SettingsPanel({ password }) {
       if (d.about_bio) setAboutBio(d.about_bio)
       if (d.about_quote) setAboutQuote(d.about_quote)
       if (d.about_interests) setAboutInterests(d.about_interests)
+      if (d.graduation_date) setGraduationDate(d.graduation_date)
     })
   }, [])
 
@@ -331,6 +333,28 @@ function SettingsPanel({ password }) {
         </button>
         {results.about_interests?.ok && <div style={S.successBox}>{results.about_interests.ok}</div>}
         {results.about_interests?.err && <div style={S.errBox}>{results.about_interests.err}</div>}
+      </div>
+
+      {/* Graduation Date */}
+      <div style={S.card}>
+        <div style={S.sectionTitle}>Graduation Date & Time</div>
+        <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 16, lineHeight: 1.55 }}>
+          Controls the countdown clock on the homepage. Enter the date and time in <strong style={{ color: 'var(--text)' }}>Central Time (CT)</strong>.
+        </p>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            style={{ ...S.input, maxWidth: 260 }}
+            type="datetime-local"
+            value={graduationDate}
+            onChange={e => setGraduationDate(e.target.value)}
+          />
+          <button onClick={() => saveSetting('graduation_date', graduationDate)} disabled={saving.graduation_date || !graduationDate} style={{ ...S.saveBtn, opacity: (saving.graduation_date || !graduationDate) ? 0.6 : 1 }}>
+            {saving.graduation_date ? 'Saving…' : 'Save Date'}
+          </button>
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>Example: 2026-06-01T18:00 = June 1, 2026 at 6:00 PM CT</div>
+        {results.graduation_date?.ok && <div style={S.successBox}>{results.graduation_date.ok}</div>}
+        {results.graduation_date?.err && <div style={S.errBox}>{results.graduation_date.err}</div>}
       </div>
     </div>
   )

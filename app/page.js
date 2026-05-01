@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-const GRADUATION_DATE = new Date('2026-06-01T23:00:00Z') // June 1, 2026 6pm CDT
+const FALLBACK_GRADUATION = new Date('2026-06-01T23:00:00Z')
 
 const INDUSTRIES = [
   'All', 'Technology', 'Healthcare', 'Energy', 'Petrochemical',
@@ -84,7 +84,7 @@ function CareerCard({ sub }) {
 }
 
 export default function HomePage() {
-  const [countdown, setCountdown] = useState(() => getTimeLeft(GRADUATION_DATE))
+  const [countdown, setCountdown] = useState(() => getTimeLeft(FALLBACK_GRADUATION))
   const [stats, setStats] = useState({ donorCount: 0, storyCount: 0, stateCount: 0, cityCount: 0 })
   const [donors, setDonors] = useState([])
   const [stories, setStories] = useState([])
@@ -95,15 +95,19 @@ export default function HomePage() {
     carson_photo: null,
     dads_note: '',
     donor_goal: '50',
+    graduation_date: '',
     site_subtitle: 'Carson Sauceda is graduating from Bridge City High School and figuring out who he wants to be. Donate and share your career story — give him a real map of what\'s possible.',
   })
 
   useEffect(() => {
-    const tick = () => setCountdown(getTimeLeft(GRADUATION_DATE))
+    const target = settings.graduation_date
+      ? new Date(settings.graduation_date + '-05:00')
+      : FALLBACK_GRADUATION
+    const tick = () => setCountdown(getTimeLeft(target))
     tick()
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
-  }, [])
+  }, [settings.graduation_date])
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(d => setSettings(prev => ({ ...prev, ...d }))).catch(() => {})
